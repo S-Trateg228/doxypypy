@@ -18,7 +18,7 @@ from ast import NodeVisitor, parse, iter_fields, AST, Name, get_docstring
 from argparse import ArgumentParser
 from re import compile as regexpCompile, IGNORECASE, MULTILINE
 from types import GeneratorType
-from sys import argv, stderr, exit as sysExit
+from sys import argv, stdout, stderr, exit as sysExit
 from os.path import basename, getsize
 from os import linesep, sep
 from string import whitespace
@@ -1095,7 +1095,9 @@ def main():
 
     # Read contents of input file.
     if encoding == 'ascii':
-        inFile = open(args.filename)
+        # Replace ascii with utf-8. It doesn't break english alphabet
+        # and supports e.g. Russian language.
+        inFile = open(args.filename, encoding='utf-8')
     else:
         inFile = codecsOpen(args.filename, encoding=encoding)
     lines = inFile.readlines()
@@ -1105,6 +1107,8 @@ def main():
     astWalker.parseLines()
     # Output the modified source.
 
+    # Force stdout to use utf-8, otherwise a doxygen falls in encoding problems.
+    stdout.reconfigure(encoding='utf-8')
     # There is a "feature" in print on Windows. If linesep is
     # passed, it will generate 0x0D 0x0D 0x0A each line which
     # screws up Doxygen since it's expected 0x0D 0x0A line endings.
